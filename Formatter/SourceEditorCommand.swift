@@ -9,6 +9,19 @@
 import Foundation
 import XcodeKit
 
+extension NSString
+{
+    func remove (characters: [Character], in range: NSRange) -> NSString
+    {
+        var cleanString = self;
+        for char in characters
+        {
+            cleanString = cleanString.replacingOccurrences(of: String(char), with: "", options: .caseInsensitive, range: range)
+        }
+        return cleanString
+    }
+}
+
 class SourceEditorCommand: NSObject, XCSourceEditorCommand
 {
     
@@ -16,7 +29,7 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand
     {
         // Implement your command here, invoking the completion handler when done. Pass it nil on success, and an NSError on failure.
         
-        var updatedLineIndexes = []
+        var updatedLineIndexes: [Int] = []
         
         for lineIndex in 0 ..< invocation.buffer.lines.count
         {
@@ -27,6 +40,12 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand
                 let range = NSRange(0 ..< line.length)
                 let results = regex.matches(in: line as String, options: .reportProgress, range: range)
                 
+                _ = results.map
+                { result in
+                    let cleanLine = line.remove(characters: ["(", ")"], in: result.range)
+                    updatedLineIndexes.append(lineIndex)
+                    invocation.buffer.lines[lineIndex] = cleanLine
+                }
             }
             catch
             {
