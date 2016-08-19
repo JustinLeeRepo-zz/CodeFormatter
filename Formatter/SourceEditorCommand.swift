@@ -36,7 +36,7 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand
             let line = invocation.buffer.lines[lineIndex] as! NSString
             do
             {
-                let regex = try RegularExpression(pattern: "\\{.*\\(.+\\).in", options: .caseInsensitive)
+                let regex = try RegularExpression(pattern: "\\{.*\\(.+\\).+in", options: .caseInsensitive)
                 let range = NSRange(0 ..< line.length)
                 let results = regex.matches(in: line as String, options: .reportProgress, range: range)
                 
@@ -53,7 +53,17 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand
             }
         }
         
+        if !updatedLineIndexes.isEmpty
+        {
+            let updatedSelections: [XCSourceTextRange] = updatedLineIndexes.map
+            { lineIndex in
+                let lineSelection = XCSourceTextRange()
+                lineSelection.start = XCSourceTextPosition(line: lineIndex, column: 0)
+                lineSelection.end = XCSourceTextPosition(line: lineIndex, column: 0)
+                return lineSelection
+            }
+            invocation.buffer.selections.setArray(updatedSelections)
+        }
         completionHandler(nil)
     }
-    
 }
